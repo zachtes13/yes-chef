@@ -1,0 +1,6 @@
+.env
+/shelf/
+/workspace.xml
+/httpRequests/
+/dataSources/
+/dataSources.local.xml
