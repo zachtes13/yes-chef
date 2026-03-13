@@ -54,9 +54,11 @@ if files:
             new_vector_store = FAISS.from_texts(all_chunks, embeddings)
             st.session_state.vector_store.merge_from(new_vector_store)
 
-user_prompt = st.text_input("What's on the menu?")
+with st.form(key="menu_form", clear_on_submit=False):
+    user_prompt = st.text_input("What's on the menu?", key="user_prompt")
+    submitted = st.form_submit_button("Send")
 
-if user_prompt:
+if submitted and user_prompt:
     if st.session_state.vector_store is not None:
         with st.spinner("Retrieving relevant recipes..."):
             retriever = st.session_state.vector_store.as_retriever(
@@ -122,6 +124,29 @@ if user_prompt:
                 expected_output="A summary of relevant information from the recipe context"
             )
 
+            seasonal_task = Task(
+                description=f"""Using the research findings, supplement the written response with 3-5 bullet point ideas 
+                on how to incorporate seasonal ingredients in a response to the user's question: "{user_prompt}"
+                
+                You should only be adding short, bullet point, recommendations and tips regarding seasonal cooking.
+                Append to the response with a sub-header and bullet points.""",
+                agent=seasonal_chef,
+                context=[research_task],
+                expected_output="A relevant header to seasonal cooking with 3-5 bullet point suggestions"
+            )
+
+            dietary_task = Task(
+                description=f"""Using the research findings, supplement the written response and seasonal suggestions 
+                with 3-5 bullet point ideas on how to incorporate nutritionally balanced
+                ingredients in a response to the user's question: "{user_prompt}"
+                
+                You should only be adding short, bullet point, recommendations and tips regarding healthy cooking.
+                Append to the response and seasonal suggestion with a sub-header and bullet points.""",
+                agent=dietary_chef,
+                context=[research_task, seasonal_task],
+                expected_output="A relevant header to healthy cooking with 3-5 bullet point suggestions"
+            )
+
             writing_task = Task(
                 description=f"""Using the research findings, create a comprehensive response 
                 to the user's question: "{user_prompt}"
@@ -135,35 +160,21 @@ if user_prompt:
                 
                 If the context contains specific recipes, include ingredients and instructions.
                 If the context is insufficient, supplement with general culinary knowledge 
-                while being clear about what came from the uploaded recipes vs general knowledge.""",
+                while being clear about what came from the uploaded recipes vs general knowledge.
+
+                IMPORTANT: At the very end of your response, append the following two sections in this order:
+                1) A seasonal cooking section that includes the seasonal_task output.
+                2) A healthy cooking section that includes the dietary_task output.
+
+                Preserve the section headers and bullet points from those task outputs (copy them verbatim when possible).""",
                 agent=chef_writer,
+                context=[research_task, seasonal_task, dietary_task],
                 expected_output="A complete, well-formatted response to the user's question"
-            )
-
-            seasonal_task = Task(
-                description=f"""Using the research findings, supplement the written response with 3-5 bullet point ideas 
-                on how to incorporate seasonal ingredients in a response to the user's question: "{user_prompt}"
-                
-                You should only be adding short, bullet point, recommendations and tips regarding seasonal cooking.
-                Append to the response with a sub-header and bullet points.""",
-                agent=seasonal_chef,
-                expected_output="A relevant header to seasonal cooking with 3-5 bullet point suggestions"
-            )
-
-            dietary_task = Task(
-                description=f"""Using the research findings, supplement the written response and seasonal suggestions 
-                with 3-5 bullet point ideas on how to incorporate nutritionally balanced
-                ingredients in a response to the user's question: "{user_prompt}"
-                
-                You should only be adding short, bullet point, recommendations and tips regarding healthy cooking.
-                Append to the response and seasonal suggestion with a sub-header and bullet points.""",
-                agent=seasonal_chef,
-                expected_output="A relevant header to healthy cooking with 3-5 bullet point suggestions"
             )
             
             crew = Crew(
                 agents=[recipe_researcher, chef_writer, seasonal_chef, dietary_chef],
-                tasks=[research_task, writing_task, seasonal_task, dietary_task],
+                tasks=[research_task, seasonal_task, dietary_task, writing_task],
                 verbose=True,
                 process=Process.sequential
             )
@@ -215,17 +226,17 @@ if user_prompt:
                 allow_delegation=False
             )
 
-            writing_task = Task(
-                description=f"""Using the research findings, create a comprehensive response 
-                        to the user's question: "{user_prompt}"
-                        
-                        Format your response to be:
-                        - Clear and easy to understand
-                        - Well-structured with proper formatting
-                        - Practical and actionable
-                        - Warm and enthusiastic in tone""",
-                agent=chef_writer,
-                expected_output="A complete, well-formatted response to the user's question"
+            research_task = Task(
+                description=f"""Analyze the following user question:
+                
+                USER QUESTION: {user_prompt}
+                
+                Your task: Extract the most relevant information from the context that answers 
+                the user's question. Identify key recipes, ingredients, techniques, or cooking 
+                tips that are pertinent. If the context doesn't fully answer the question, 
+                note what's missing.""",
+                agent=recipe_researcher,
+                expected_output="A summary of relevant information from the recipe context"
             )
 
             seasonal_task = Task(
@@ -235,23 +246,45 @@ if user_prompt:
                         You should only be adding short, bullet point, recommendations and tips regarding seasonal cooking.
                         Append to the response with a sub-header and bullet points.""",
                 agent=seasonal_chef,
+                context=[research_task],
                 expected_output="A relevant header to seasonal cooking with 3-5 bullet point suggestions"
             )
 
             dietary_task = Task(
                 description=f"""Using the research findings, supplement the written response and seasonal suggestion
-                        with 3-5 bullet point ideas on how to incorporate nutritionally balanced ingredients 
-                        in a response to the user's question: "{user_prompt}"
-                        
-                        You should only be adding short, bullet point, recommendations and tips regarding healthy cooking.
-                        Append to the seasonal suggestion and response with a sub-header and bullet points.""",
-                agent=seasonal_chef,
+                            with 3-5 bullet point ideas on how to incorporate nutritionally balanced ingredients 
+                            in a response to the user's question: "{user_prompt}"
+                            
+                            You should only be adding short, bullet point, recommendations and tips regarding healthy cooking.
+                            Append to the seasonal suggestion and response with a sub-header and bullet points.""",
+                agent=dietary_chef,
+                context=[research_task, seasonal_task],
                 expected_output="A relevant header to healthy cooking with 3-5 bullet point suggestions"
+            )
+
+            writing_task = Task(
+                description=f"""Using the research findings, create a comprehensive response 
+                        to the user's question: "{user_prompt}"
+                        
+                        Format your response to be:
+                        - Clear and easy to understand
+                        - Well-structured with proper formatting
+                        - Practical and actionable
+                        - Warm and enthusiastic in tone
+
+                        IMPORTANT: At the very end of your response, append the following two sections in this order:
+                        1) A seasonal cooking section that includes the seasonal_task output.
+                        2) A healthy cooking section that includes the dietary_task output.
+
+                        Preserve the section headers and bullet points from those task outputs (copy them verbatim when possible).""",
+                agent=chef_writer,
+                context=[research_task, seasonal_task, dietary_task],
+                expected_output="A complete, well-formatted response to the user's question"
             )
 
             crew = Crew(
                 agents=[recipe_researcher, chef_writer, seasonal_chef, dietary_chef],
-                tasks=[writing_task, seasonal_task, dietary_task],
+                tasks=[research_task, seasonal_task, dietary_task, writing_task],
                 verbose=True,
                 process=Process.sequential
             )
