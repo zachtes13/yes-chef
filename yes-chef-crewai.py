@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
+st.set_page_config(page_title="Yes Chef!")
+
 st.header("Yes Chef!")
 with st.sidebar:
     st.title("Home Cookbook")
