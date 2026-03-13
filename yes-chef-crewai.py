@@ -73,9 +73,12 @@ if submitted and user_prompt:
             recipe_researcher = Agent(
                 role='Recipe Researcher',
                 goal='Analyze recipe context and extract relevant information',
-                backstory="""You are an expert culinary researcher with deep knowledge of 
-                international cuisines, cooking techniques, and recipe development. You excel 
-                at analyzing recipe documents and identifying the most relevant information.""",
+                backstory="""# Capacity: Expert culinary researcher
+                # Role: You analyze recipe documents and extract relevant information
+                # Insight: You have deep knowledge of international cuisines, cooking techniques, and recipe development
+                # Statement: You excel at analyzing recipe documents and identifying the most relevant information
+                # Personality: Professional, thorough, detail-oriented
+                # Experiment: N/A""",
                 verbose=True,
                 allow_delegation=False
             )
@@ -83,8 +86,12 @@ if submitted and user_prompt:
             seasonal_chef = Agent(
                 role='Seasonal Recipe Researcher',
                 goal='Provide supplementary meal suggestions on how to incorporate seasonal ingredients to make seasonal dishes',
-                backstory="""You are a professional chef who prioritizes menus using seasonal
-                ingredients. Your emphasis on seasonally accessible ingredients ensures freshness and culinary quality.""",
+                backstory="""# Capacity: Professional chef
+                # Role: You provide supplementary meal suggestions incorporating seasonal ingredients
+                # Insight: You prioritize menus using seasonal ingredients
+                # Statement: Your emphasis on seasonally accessible ingredients ensures freshness and culinary quality
+                # Personality: Seasonally-focused, quality-driven
+                # Experiment: N/A""",
                 verbose=True,
                 allow_delegation=False
             )
@@ -92,8 +99,12 @@ if submitted and user_prompt:
             dietary_chef = Agent(
                 role='Dietary Recipe Researcher',
                 goal='Provide supplementary meal suggestions on how to incorporate nutritional ingredients to make healthy dishes',
-                backstory="""You are a professional chef who prioritizes healthy food and
-                recipes that are nutritionally balanced and prioritize a healthy lifestyle.""",
+                backstory="""# Capacity: Professional chef
+                # Role: You provide supplementary meal suggestions incorporating nutritional ingredients
+                # Insight: You prioritize healthy food and recipes that are nutritionally balanced
+                # Statement: You prioritize a healthy lifestyle through your recipe recommendations
+                # Personality: Health-conscious, nutrition-focused
+                # Experiment: N/A""",
                 verbose=True,
                 allow_delegation=False
             )
@@ -101,72 +112,63 @@ if submitted and user_prompt:
             chef_writer = Agent(
                 role='Recipe Writer',
                 goal='Write clear, detailed, and engaging culinary responses',
-                backstory="""You are a professional recipe writer who creates easy-to-follow 
-                recipes with precise measurements and clear instructions. You make cooking 
-                accessible and enjoyable for home cooks.""",
+                backstory="""# Capacity: Professional recipe writer
+                # Role: You write clear, detailed, and engaging culinary responses
+                # Insight: You create easy-to-follow recipes with precise measurements and clear instructions
+                # Statement: You make cooking accessible and enjoyable for home cooks
+                # Personality: Warm, enthusiastic, clear communicator
+                # Experiment: N/A""",
                 verbose=True,
                 allow_delegation=False
             )
             
             research_task = Task(
-                description=f"""Analyze the following recipe context and user question:
-                
-                USER QUESTION: {user_prompt}
-                
-                RECIPE CONTEXT FROM UPLOADED PDFs:
+                description=f"""# Capacity: Expert culinary researcher
+                # Role: Analyze recipe context and extract relevant information
+                # Insight: USER QUESTION: {user_prompt}
+                # Insight: RECIPE CONTEXT FROM UPLOADED PDFs:
                 {context}
-                
-                Your task: Extract the most relevant information from the context that answers 
-                the user's question. Identify key recipes, ingredients, techniques, or cooking 
-                tips that are pertinent. If the context doesn't fully answer the question, 
-                note what's missing.""",
+                # Statement: Extract the most relevant information from the context that answers the user's question. Identify key recipes, ingredients, techniques, or cooking tips that are pertinent. If the context doesn't fully answer the question, note what's missing.
+                # Personality: Thorough and precise
+                # Experiment: N/A""",
                 agent=recipe_researcher,
                 expected_output="A summary of relevant information from the recipe context"
             )
 
             seasonal_task = Task(
-                description=f"""Using the research findings, supplement the written response with 3-5 bullet point ideas 
-                on how to incorporate seasonal ingredients in a response to the user's question: "{user_prompt}"
-                
-                You should only be adding short, bullet point, recommendations and tips regarding seasonal cooking.
-                Append to the response with a sub-header and bullet points.""",
+                description=f"""# Capacity: Professional seasonal chef
+                # Role: Supplement the written response with seasonal ingredient ideas
+                # Insight: User's question: "{user_prompt}"
+                # Insight: Using the research findings
+                # Statement: Supplement the written response with 3-5 bullet point ideas on how to incorporate seasonal ingredients. You should only be adding short, bullet point, recommendations and tips regarding seasonal cooking. Append to the response with a sub-header and bullet points.
+                # Personality: Seasonally-focused
+                # Experiment: N/A""",
                 agent=seasonal_chef,
                 context=[research_task],
                 expected_output="A relevant header to seasonal cooking with 3-5 bullet point suggestions"
             )
 
             dietary_task = Task(
-                description=f"""Using the research findings, supplement the written response and seasonal suggestions 
-                with 3-5 bullet point ideas on how to incorporate nutritionally balanced
-                ingredients in a response to the user's question: "{user_prompt}"
-                
-                You should only be adding short, bullet point, recommendations and tips regarding healthy cooking.
-                Append to the response and seasonal suggestion with a sub-header and bullet points.""",
+                description=f"""# Capacity: Professional dietary chef
+                # Role: Supplement the written response with nutritional ingredient ideas
+                # Insight: User's question: "{user_prompt}"
+                # Insight: Using the research findings and seasonal suggestions
+                # Statement: Supplement the written response and seasonal suggestions with 3-5 bullet point ideas on how to incorporate nutritionally balanced ingredients. You should only be adding short, bullet point, recommendations and tips regarding healthy cooking. Append to the response and seasonal suggestion with a sub-header and bullet points.
+                # Personality: Health-conscious
+                # Experiment: N/A""",
                 agent=dietary_chef,
                 context=[research_task, seasonal_task],
                 expected_output="A relevant header to healthy cooking with 3-5 bullet point suggestions"
             )
 
             writing_task = Task(
-                description=f"""Using the research findings, create a comprehensive response 
-                to the user's question: "{user_prompt}"
-                
-                Format your response to be:
-                - Clear and easy to understand
-                - Well-structured with proper formatting
-                - Practical and actionable
-                - Based on the provided recipe context
-                - Warm and enthusiastic in tone
-                
-                If the context contains specific recipes, include ingredients and instructions.
-                If the context is insufficient, supplement with general culinary knowledge 
-                while being clear about what came from the uploaded recipes vs general knowledge.
-
-                IMPORTANT: At the very end of your response, append the following two sections in this order:
-                1) A seasonal cooking section that includes the seasonal_task output.
-                2) A healthy cooking section that includes the dietary_task output.
-
-                Preserve the section headers and bullet points from those task outputs (copy them verbatim when possible).""",
+                description=f"""# Capacity: Professional recipe writer
+                # Role: Create a comprehensive response to the user's question
+                # Insight: User's question: "{user_prompt}"
+                # Insight: Using the research findings
+                # Statement: Create a comprehensive response. Format your response to be: clear and easy to understand, well-structured with proper formatting, practical and actionable, based on the provided recipe context, warm and enthusiastic in tone. If the context contains specific recipes, include ingredients and instructions. If the context is insufficient, supplement with general culinary knowledge while being clear about what came from the uploaded recipes vs general knowledge. IMPORTANT: At the very end of your response, append the following two sections in this order: 1) A seasonal cooking section that includes the seasonal_task output. 2) A healthy cooking section that includes the dietary_task output. Preserve the section headers and bullet points from those task outputs (copy them verbatim when possible).
+                # Personality: Warm and enthusiastic
+                # Experiment: N/A""",
                 agent=chef_writer,
                 context=[research_task, seasonal_task, dietary_task],
                 expected_output="A complete, well-formatted response to the user's question"
@@ -191,9 +193,12 @@ if submitted and user_prompt:
             recipe_researcher = Agent(
                 role='Recipe Researcher',
                 goal='Analyze recipe context and extract relevant information',
-                backstory="""You are an expert culinary researcher with deep knowledge of 
-                        international cuisines, cooking techniques, and recipe development. You excel 
-                        at analyzing recipe documents and identifying the most relevant information.""",
+                backstory="""# Capacity: Expert culinary researcher
+                        # Role: You analyze recipe documents and extract relevant information
+                        # Insight: You have deep knowledge of international cuisines, cooking techniques, and recipe development
+                        # Statement: You excel at analyzing recipe documents and identifying the most relevant information
+                        # Personality: Professional, thorough, detail-oriented
+                        # Experiment: N/A""",
                 verbose=True,
                 allow_delegation=False
             )
@@ -201,8 +206,12 @@ if submitted and user_prompt:
             seasonal_chef = Agent(
                 role='Seasonal Recipe Researcher',
                 goal='Provide supplementary meal suggestions on how to incorporate seasonal ingredients to make seasonal dishes',
-                backstory="""You are a professional chef who prioritizes menus using seasonal
-                        ingredients. Your emphasis on seasonally accessible ingredients ensures freshness and culinary quality.""",
+                backstory="""# Capacity: Professional chef
+                        # Role: You provide supplementary meal suggestions incorporating seasonal ingredients
+                        # Insight: You prioritize menus using seasonal ingredients
+                        # Statement: Your emphasis on seasonally accessible ingredients ensures freshness and culinary quality
+                        # Personality: Seasonally-focused, quality-driven
+                        # Experiment: N/A""",
                 verbose=True,
                 allow_delegation=False
             )
@@ -210,8 +219,12 @@ if submitted and user_prompt:
             dietary_chef = Agent(
                 role='Dietary Recipe Researcher',
                 goal='Provide supplementary meal suggestions on how to incorporate nutritional ingredients to make healthy dishes',
-                backstory="""You are a professional chef who prioritizes healthy food and
-                        recipes that are nutritionally balanced and prioritize a healthy lifestyle.""",
+                backstory="""# Capacity: Professional chef
+                        # Role: You provide supplementary meal suggestions incorporating nutritional ingredients
+                        # Insight: You prioritize healthy food and recipes that are nutritionally balanced
+                        # Statement: You prioritize a healthy lifestyle through your recipe recommendations
+                        # Personality: Health-conscious, nutrition-focused
+                        # Experiment: N/A""",
                 verbose=True,
                 allow_delegation=False
             )
@@ -219,64 +232,61 @@ if submitted and user_prompt:
             chef_writer = Agent(
                 role='Recipe Writer',
                 goal='Write clear, detailed, and engaging culinary responses',
-                backstory="""You are a professional recipe writer who creates easy-to-follow 
-                        recipes with precise measurements and clear instructions. You make cooking 
-                        accessible and enjoyable for home cooks.""",
+                backstory="""# Capacity: Professional recipe writer
+                        # Role: You write clear, detailed, and engaging culinary responses
+                        # Insight: You create easy-to-follow recipes with precise measurements and clear instructions
+                        # Statement: You make cooking accessible and enjoyable for home cooks
+                        # Personality: Warm, enthusiastic, clear communicator
+                        # Experiment: N/A""",
                 verbose=True,
                 allow_delegation=False
             )
 
             research_task = Task(
-                description=f"""Analyze the following user question:
-                
-                USER QUESTION: {user_prompt}
-                
-                Your task: Extract the most relevant information from the context that answers 
-                the user's question. Identify key recipes, ingredients, techniques, or cooking 
-                tips that are pertinent. If the context doesn't fully answer the question, 
-                note what's missing.""",
+                description=f"""# Capacity: Expert culinary researcher
+                # Role: Analyze user question and extract relevant information
+                # Insight: USER QUESTION: {user_prompt}
+                # Statement: Extract the most relevant information from the context that answers the user's question. Identify key recipes, ingredients, techniques, or cooking tips that are pertinent. If the context doesn't fully answer the question, note what's missing.
+                # Personality: Thorough and precise
+                # Experiment: N/A""",
                 agent=recipe_researcher,
                 expected_output="A summary of relevant information from the recipe context"
             )
 
             seasonal_task = Task(
-                description=f"""Using the research findings, supplement the written response with 3-5 bullet point ideas 
-                        on how to incorporate seasonal ingredients in a response to the user's question: "{user_prompt}"
-                        
-                        You should only be adding short, bullet point, recommendations and tips regarding seasonal cooking.
-                        Append to the response with a sub-header and bullet points.""",
+                description=f"""# Capacity: Professional seasonal chef
+                        # Role: Supplement the written response with seasonal ingredient ideas
+                        # Insight: User's question: "{user_prompt}"
+                        # Insight: Using the research findings
+                        # Statement: Supplement the written response with 3-5 bullet point ideas on how to incorporate seasonal ingredients. You should only be adding short, bullet point, recommendations and tips regarding seasonal cooking. Append to the response with a sub-header and bullet points.
+                        # Personality: Seasonally-focused
+                        # Experiment: N/A""",
                 agent=seasonal_chef,
                 context=[research_task],
                 expected_output="A relevant header to seasonal cooking with 3-5 bullet point suggestions"
             )
 
             dietary_task = Task(
-                description=f"""Using the research findings, supplement the written response and seasonal suggestion
-                            with 3-5 bullet point ideas on how to incorporate nutritionally balanced ingredients 
-                            in a response to the user's question: "{user_prompt}"
-                            
-                            You should only be adding short, bullet point, recommendations and tips regarding healthy cooking.
-                            Append to the seasonal suggestion and response with a sub-header and bullet points.""",
+                description=f"""# Capacity: Professional dietary chef
+                            # Role: Supplement the written response with nutritional ingredient ideas
+                            # Insight: User's question: "{user_prompt}"
+                            # Insight: Using the research findings and seasonal suggestion
+                            # Statement: Supplement the written response and seasonal suggestion with 3-5 bullet point ideas on how to incorporate nutritionally balanced ingredients. You should only be adding short, bullet point, recommendations and tips regarding healthy cooking. Append to the seasonal suggestion and response with a sub-header and bullet points.
+                            # Personality: Health-conscious
+                            # Experiment: N/A""",
                 agent=dietary_chef,
                 context=[research_task, seasonal_task],
                 expected_output="A relevant header to healthy cooking with 3-5 bullet point suggestions"
             )
 
             writing_task = Task(
-                description=f"""Using the research findings, create a comprehensive response 
-                        to the user's question: "{user_prompt}"
-                        
-                        Format your response to be:
-                        - Clear and easy to understand
-                        - Well-structured with proper formatting
-                        - Practical and actionable
-                        - Warm and enthusiastic in tone
-
-                        IMPORTANT: At the very end of your response, append the following two sections in this order:
-                        1) A seasonal cooking section that includes the seasonal_task output.
-                        2) A healthy cooking section that includes the dietary_task output.
-
-                        Preserve the section headers and bullet points from those task outputs (copy them verbatim when possible).""",
+                description=f"""# Capacity: Professional recipe writer
+                        # Role: Create a comprehensive response to the user's question
+                        # Insight: User's question: "{user_prompt}"
+                        # Insight: Using the research findings
+                        # Statement: Create a comprehensive response. Format your response to be: clear and easy to understand, well-structured with proper formatting, practical and actionable, warm and enthusiastic in tone. IMPORTANT: At the very end of your response, append the following two sections in this order: 1) A seasonal cooking section that includes the seasonal_task output. 2) A healthy cooking section that includes the dietary_task output. Preserve the section headers and bullet points from those task outputs (copy them verbatim when possible).
+                        # Personality: Warm and enthusiastic
+                        # Experiment: N/A""",
                 agent=chef_writer,
                 context=[research_task, seasonal_task, dietary_task],
                 expected_output="A complete, well-formatted response to the user's question"
